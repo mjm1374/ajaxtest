@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ajax Playground</title>
+    <meta charset="utf-8" />
+
+    <script src="https://code.jquery.com/jquery-3.4.0.min.js" integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <link href="css/styles.css" rel="stylesheet" />
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD0uaFDVy5scklnboJVj-ec3e6fa_sHWs"></script> 
+ 
+    <script src="gmaps3.js"></script>
+
+<style>
+    .pad5{padding:5px;}
+    .map{
+        width: 500px;
+        height: 500px;
+        
+    }
+    .listClick{
+        cursor: pointer;
+    }
+    .right{
+        float: right;
+    }
+    .title{
+        font-weight: 700;
+    }
+</style>
+
+</head>
+<body>
+    <div class="right">
+        <div class="map"></div>
+        <div id="target" class="pad5"></div>
+    </div>
+
+    <select id="cats" class="pad5">
+            <option value-"">Select A Category</option>
+    </select>
+
+    <div id="target2" class="pad5"></div>
+
+</body>
+
+<script>
+    const app_id = "DemoAppId01082013GAL";
+    const app_code = "AJKnXv84fjrb0KIHawS0Tg";
+    var at =  "39.9526,-75.1652";
+    var cat = "eat-drink";
+
+$(function(){
+    //Simple Defer
+    function doSomethingLater( fn, time ) {
+    var dfd = $.Deferred();
+
+    setTimeout(function() {
+        dfd.resolve( fn() );
+    }, time || 0);
+
+    return dfd.promise();
+    }
+
+    var success = function( resp ) {
+    $( '#target' ).html( 'it worked' );
+    };
+
+    var err = function( req, status, err ) {
+    $( '#target' ).html( 'it failed' );
+    };
+
+    var dfd = doSomethingLater(function() { /* ... */ }, 100);
+
+    dfd.then( success, err );
+
+    //Get data and do soemthing    
+
+
+
+    $.when(  $.get( 'https://places.demo.api.here.com/places/v1/categories/places', 
+    { app_id: app_id, app_code: app_code, at: at} ) )
+    .then(function( result ) {
+        console.log( "my results", result );
+        
+        var myItems =  result.items;
+        var myString = "";
+
+            myItems.forEach(function (item, key) {
+                //console.log(key);
+                //console.log(item);
+                myString =  "<option value'" + myItems[key].id + "'>" + myItems[key].title + "</option>";
+                $('#cats').append(myString);
+            });
+
+           
+             
+    }).fail(function( err ) {
+        console.log("Error: " +  err.responseText);
+    });
+
+
+    $('#cats').on("change", function(e){
+
+        cat=  $('#cats').val();
+        if(cat != undefined || cat != "") getplaces(cat);
+
+    });
+
+    $('.map')
+      .gmap3({
+        address: at,
+        zoom: 15,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+        },
+        navigationControl: true,
+        scrollwheel: true,
+        streetViewControl: true
+      }).on({
+        // examples of use with a handler
+        dragend: function (event) {
+            
+            var myLatLng = event.latLng;
+            //var lat = myLatLng.lat();
+           // var lng = myLatLng.lng();
+            console.log(event.center.lat());
+            at = event.center.lat() + "," + event.center.lng();
+            getplaces()
+        }
+    });
+
+    
+
+
+});
+
+function copyBuilder(shop){
+    console.log(shop);
+    var myCopy = "<span class='title'>";
+    myCopy += shop.title + "</span><br />" + shop.vicinity + "<br />";
+    if( shop.openingHours != undefined){
+        myCopy += "<span class='title'>Hours:</span><br />" + shop.openingHours.text + "<br /> Open Now: " + shop.openingHours.isOpen + "<br />";
+    }
+    
+
+    return myCopy;
+}
+
+function getplaces(){
+    $.when(  $.get( 'https://places.demo.api.here.com/places/v1/discover/explore', 
+    { app_id: app_id, app_code: app_code, at: at, cat: cat} ) )
+    .then(function( result ) {
+        console.log(result);
+
+        var myItems =  result.results.items;
+        var myString = "<ul>";
+            if(myItems.length > 0){
+                myItems.forEach(function (item, key) {
+                    myString += "<li class='listClick' data-item='" + key +"'>" + myItems[key].title + "</li>";
+                });
+
+                myString += "</ul>";
+
+            } else {
+                myString = "No Results Found";
+            }
+            
+
+            $('#target2').html(myString);
+            $('.listClick').on('click',function(){
+                //console.log("xxx",$(this).data('item'));
+            
+                var item = myItems[$(this).data('item')];
+                var here = item.position;
+                var myCopy = copyBuilder(item); 
+                $('#target').html(myCopy);
+
+
+                $('.map').gmap3({
+                    address: here,
+                    center: new google.maps.LatLng(here),
+                    zoom: 1,})
+                    .marker({
+                    position: here,
+                    center: new google.maps.LatLng(here),
+                    icon: 'https://maps.google.com/mapfiles/marker_green.png'
+                });
+                });
+              
+
+           
+             
+    }).fail(function( err ) {
+        console.log("Error: " +  err.responseText);
+    });
+
+
+}
+</script>
+</html>
