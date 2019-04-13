@@ -112,14 +112,24 @@ $(function(){
 
 function copyBuilder(shop){
     console.log(shop);
-    var myCopy = "<span class='title'>";
-    myCopy += shop.title + "</span><br />" + shop.vicinity + "<br />";
-    if( shop.openingHours != undefined){
-        myCopy += "<span class='title'>Hours:</span><br />" + shop.openingHours.text + "<br /> Open Now: " + shop.openingHours.isOpen + "<br />";
-    }
+    $.when(  $.get( shop.href ) )
+    .then(function( result ) {
+            console.log(result);
+            var myCopy = "<span class='title'>";
+            myCopy += result.name + "</span><br />" + result.location.address.text + "<br />";
+            myCopy += result.contacts.phone[0].value + "<br />";
+            myCopy += "<a href='" + result.contacts.website[0].value + "'>" + result.contacts.website[0].value + "</a><br />";
+            if( shop.openingHours != undefined){
+                myCopy += "<span class='title'>Hours:</span><br />" + shop.openingHours.text + "<br /> Open Now: " + shop.openingHours.isOpen + "<br />";
+            }
+            
+            $('#target').html(myCopy);
+
+    });
+    
     
     setMarkers(shop);
-    return myCopy;
+    
 }
 
 function getplaces(){
@@ -150,7 +160,7 @@ function getplaces(){
                 var item = myItems[$(this).data('item')];
                 var here = item.position;
                 var myCopy = copyBuilder(item); 
-                $('#target').html(myCopy);
+                
 
 
                 });
