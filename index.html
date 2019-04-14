@@ -120,8 +120,12 @@ function copyBuilder(shop){
             var myCopy = "<span class='title'>";
             myCopy += result.name + "</span><br />" + result.location.address.text + "<br />";
             var bubbleCopy =  myCopy;
+            if( result.contacts.phone != undefined){
             myCopy += result.contacts.phone[0].value + "<br />";
+            }
+            if( result.contacts.website != undefined){
             myCopy += "<a href='" + result.contacts.website[0].value + "'>" + result.contacts.website[0].value + "</a><br />";
+            }
             if( shop.openingHours != undefined){
                 myCopy += "<span class='title'>Hours:</span><br />" + shop.openingHours.text + "<br /> Open Now: " + shop.openingHours.isOpen + "<br />";
             }
