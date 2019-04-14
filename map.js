@@ -43,7 +43,6 @@ function initMap(newLat, newLng) {
         switch(error.code) {
           case error.PERMISSION_DENIED:
             x.innerHTML = "User denied the request for Geolocation.";
-             findSatAbove();
             break;
           case error.POSITION_UNAVAILABLE:
             x.innerHTML = "Location information is unavailable.";
@@ -80,29 +79,20 @@ function initMap(newLat, newLng) {
 
     
 
-    function setMarkers(thisLocal) {
-
-        //console.log("v: "  + thisLocal.satid); 
+    function setMarkers(thisLocal, copy) {
         var marker = new google.maps.Marker({
-            record_id: thisLocal.id,
+            record_id: thisLocal.placeId,
             position: {
-                lat: parseFloat(thisLocal.position[0]),
-                lng: parseFloat(thisLocal.position[1])
+                lat: parseFloat(thisLocal.location.position[0]),
+                lng: parseFloat(thisLocal.location.position[1])
             },
             map: map,
-            //icon: './img/icons8-satellite-50.png',
+            icon: thisLocal.icon,
             title: thisLocal.title
-    
         });
-    
-         infocontent = "<b>" + thisLocal.title + "</b><br />" ;
-         infocontent += "<span class='addr'>" + thisLocal.vicinity + "</span><br />";
-         if( thisLocal.openingHours != undefined){
-            infocontent += "<span class='title'>Hours:</span><br /><span class='addr'>" + thisLocal.openingHours.text + "</span>";
-         }
-    
+   
         var infowindow = new google.maps.InfoWindow({
-            content: infocontent
+            content: copy
         });
     
         google.maps.event.addListener(marker, 'click', function () {
@@ -111,12 +101,9 @@ function initMap(newLat, newLng) {
             }
             infowindow.open(map, marker);
         });
-    
-        console.log("setMarkers: " + thisLocal.title);
+
         markers.push(marker);
         map.panTo(marker.getPosition());
-    
-    
     }
 
     function DeleteMarkers() {

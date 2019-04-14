@@ -13,3 +13,10 @@
 .title{
     font-weight: 700;
 }
+
+#errors{
+    width:100%;
+    margin:0 auto;
+    color:#ff0000;
+    height:auto;
+}

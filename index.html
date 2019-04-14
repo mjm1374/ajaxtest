@@ -16,6 +16,7 @@
 
 </head>
 <body>
+    <div id="errors"></div>
     <div class="right">
         <div class="map" id="map"></div>
         <div id="target" class="pad5"></div>
@@ -37,6 +38,7 @@
     var map;
     var local = getLocation();
     var markers = [];
+    const x =  $('#errors');
 
     class setLocation {
         constructor(lat = '40.079', lng = '-75.160', alt = '0') {
@@ -117,20 +119,18 @@ function copyBuilder(shop){
             console.log(result);
             var myCopy = "<span class='title'>";
             myCopy += result.name + "</span><br />" + result.location.address.text + "<br />";
+            var bubbleCopy =  myCopy;
             myCopy += result.contacts.phone[0].value + "<br />";
             myCopy += "<a href='" + result.contacts.website[0].value + "'>" + result.contacts.website[0].value + "</a><br />";
             if( shop.openingHours != undefined){
                 myCopy += "<span class='title'>Hours:</span><br />" + shop.openingHours.text + "<br /> Open Now: " + shop.openingHours.isOpen + "<br />";
             }
-            
+            setMarkers(result,bubbleCopy);
             $('#target').html(myCopy);
 
     });
-    
-    
-    setMarkers(shop);
-    
 }
+
 
 function getplaces(){
     $.when(  $.get( 'https://places.demo.api.here.com/places/v1/discover/explore', 
